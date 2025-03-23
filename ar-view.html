@@ -1,73 +1,137 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AR Демонстрация - Fitness AR</title>
-  <link rel="stylesheet" href="styles.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Стили для model-viewer */
+    model-viewer {
+      width: 100%;
+      height: 100vh;
+      background-color: transparent; /* Прозрачный фон */
+      display: none; /* Скрываем модель до активации AR */
+    }
+
+    /* Стили для загрузки */
+    .ar-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      font-family: Arial, sans-serif;
+      color: #333;
+    }
+
+    .loading-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 10px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Стили для кнопки AR */
+    .ar-button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body class="ar-page">
-  <header class="header">
-    <div class="header-container">
-      <div class="header-left">
-        <a href="javascript:history.back()" class="back-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          <span>Назад</span>
-        </a>
-        <h1 class="header-title">AR: <span id="exercise-title">Упражнение</span></h1>
-      </div>
-    </div>
-  </header>
+  <!-- Загрузка AR -->
+  <div id="ar-loading" class="ar-loading">
+    <div class="loading-spinner"></div>
+    <p>Инициализация AR...</p>
+  </div>
 
-  <main class="ar-container">
-    <div class="ar-preview" id="ar-inactive">
-      <div class="ar-info-card">
-        <div class="ar-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
-        </div>
-        <h2 id="ar-exercise-name">Название упражнения</h2>
-        <p id="ar-exercise-description">Описание упражнения будет отображаться здесь</p>
-        
-        <button id="start-ar-button" class="start-ar-button">
-          Запустить AR демонстрацию
-        </button>
-        
-        <div class="ar-info-note">
-          <p>Потребуется доступ к камере для AR функциональности</p>
-        </div>
-      </div>
-    </div>
+  <!-- Кнопка AR -->
+  <button id="arButton" class="ar-button" style="display: none;">
+    Включить AR
+  </button>
 
-    <div class="ar-view" id="ar-active" style="display: none;">
-      <!-- Симуляция AR камеры -->
-      <div class="ar-camera-feed">
-        <!-- Эта часть будет заменена реальной камерой в готовом приложении -->
-        <div class="ar-demo-image">
-          <img id="demo-image" src="https://images.unsplash.com/photo-1594381898411-846e7d193883?ixlib=rb-4.0.3&q=85&fm=jpg" alt="AR Exercise Demonstration">
-        </div>
-        
-        <!-- Информация об упражнении -->
-        <div class="ar-overlay-info">
-          <h3 id="ar-overlay-title">Название упражнения</h3>
-          <p id="ar-overlay-description">Описание упражнения</p>
-        </div>
-        
-        <!-- Кнопка закрытия AR -->
-        <button id="stop-ar-button" class="stop-ar-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      
-      <!-- Анимация загрузки AR -->
-      <div id="ar-loading" class="ar-loading">
-        <div class="loading-spinner"></div>
-        <p>Инициализация AR...</p>
-      </div>
-    </div>
-  </main>
+  <!-- Model Viewer -->
+  <model-viewer 
+    id="modelViewer"
+    src="prised2.glb" 
+    ios-src="path/to/your-model.usdz" 
+    ar 
+    ar-modes="webxr scene-viewer quick-look" 
+    camera-controls 
+    auto-rotate 
+    shadow-intensity="1"
+    xr-environment 
+    ar-placement="floor" 
+    ar-scale="auto" 
+    animation-name="" 
+    autoplay="">
+  </model-viewer>
 
-  <script src="script.js"></script>
+  <!-- Подключение model-viewer -->
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <script>
+    // Получаем элементы
+    const modelViewer = document.getElementById('modelViewer');
+    const arButton = document.getElementById('arButton');
+    const arLoading = document.getElementById('ar-loading');
+
+    // Проверяем поддержку AR
+    if (modelViewer.canActivateAR) {
+      console.log('AR поддерживается на этом устройстве.');
+      setTimeout(() => {
+        arLoading.style.display = 'none'; // Скрываем загрузку
+        arButton.style.display = 'block'; // Показываем кнопку AR
+      }, 2000); // Имитация задержки инициализации
+    } else {
+      console.warn('AR не поддерживается на этом устройстве.');
+      arLoading.innerHTML = '<p>AR не поддерживается на вашем устройстве.</p>';
+    }
+
+    // Активация AR при нажатии на кнопку
+    arButton.addEventListener('click', () => {
+      if (modelViewer.canActivateAR) {
+        activateARWithDelay();
+      } else {
+        alert('AR не поддерживается на этом устройстве.');
+      }
+    });
+
+    // Функция для активации AR с задержкой
+    function activateARWithDelay() {
+      modelViewer.style.display = 'block'; // Показываем model-viewer
+      arButton.style.display = 'none'; // Скрываем кнопку AR
+
+      modelViewer.activateAR().catch((error) => {
+        console.error('Ошибка при активации AR:', error);
+      });
+
+      // Задержка перед повторным размещением модели
+      setTimeout(() => {
+        try {
+          modelViewer.jumpToPosition(); // Перемещает модель на новую поверхность
+          console.log('Модель перемещена на новую поверхность.');
+        } catch (error) {
+          console.error('Ошибка при перемещении модели:', error);
+        }
+      }, 2000); // Задержка 2 секунды
+    }
+  </script>
 </body>
 </html>
