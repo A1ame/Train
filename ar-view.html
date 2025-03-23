@@ -51,6 +51,7 @@
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      display: none; /* Кнопка скрыта до проверки поддержки AR */
     }
   </style>
 </head>
@@ -62,7 +63,7 @@
   </div>
 
   <!-- Кнопка AR -->
-  <button id="arButton" class="ar-button" style="display: none;">
+  <button id="arButton" class="ar-button">
     Включить AR
   </button>
 
@@ -120,6 +121,7 @@
 
       modelViewer.activateAR().catch((error) => {
         console.error('Ошибка при активации AR:', error);
+        alert('Не удалось активировать AR.');
       });
 
       // Задержка перед повторным размещением модели
